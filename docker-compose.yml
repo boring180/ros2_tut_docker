@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        TARGETPLATFORM: linux/arm64
+    platform: linux/arm64
     container_name: ros2_tut_docker
     privileged: true
     ports:
@@ -13,6 +16,9 @@ services:
     environment:
       - DISPLAY=:0
       - VNC_RESOLUTION=1920x1080
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
     shm_size: 2048m
     hostname: localhost
+    restart: unless-stopped
 

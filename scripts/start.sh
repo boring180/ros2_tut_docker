@@ -1,29 +1,49 @@
 #!/bin/bash
 
+# Exit on any error
+set -e
+
+cleanup() {
+    echo "Cleaning up..."
+    pkill -9 -f "Xvfb" || true
+    pkill -9 -f "x11vnc" || true
+    pkill -9 -f "websockify" || true
+    pkill -9 -f "fluxbox" || true
+    pkill -9 -f "xterm" || true
+}
+
+# Set up trap to call cleanup function on script exit
+trap cleanup EXIT
+
 # Make sure we have a display
 export DISPLAY=:0
 
-# Start Xvfb
+echo "Starting Xvfb..."
 Xvfb :0 -screen 0 1920x1080x24 &
 sleep 2
 
-# Start window manager
+echo "Starting window manager..."
 fluxbox &
 sleep 2
 
-# Start VNC server without password
+echo "Starting VNC server..."
 x11vnc -display :0 -forever -shared -nopw &
 sleep 2
 
-# Start noVNC with specific host settings
-/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 0.0.0.0:6080 &
+echo "Starting noVNC..."
+cd /usr/share/novnc
+./utils/websockify/run --web /usr/share/novnc --wrap-mode=ignore 6080 localhost:5900 &
 sleep 2
 
-# Source ROS
+echo "Starting ROS environment..."
 source /opt/ros/humble/setup.bash
 
-# Start a terminal
+echo "Starting terminal..."
 xterm &
 
-# Keep container running
-tail -f /dev/null
+echo "Setup complete. VNC server available at port 5900, noVNC at port 6080"
+
+# Keep container running and handle signals properly
+while true; do
+    sleep 1
+done
