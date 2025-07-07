@@ -3,14 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        TARGETPLATFORM: linux/arm64
     platform: linux/arm64
     container_name: ros2_tut_docker
     privileged: true
     ports:
-      - "5900:5900"
-      - "6080:6080"
+      - "8080:8080"  # noVNC web interface
     volumes:
       - ./ws:/ws
     environment:
@@ -21,4 +18,11 @@ services:
     shm_size: 2048m
     hostname: localhost
     restart: unless-stopped
-
+  novnc:
+    image: bonigarcia/novnc:1.2.0
+    container_name: novnc
+    ports:
+      - "6080:6080"
+    environment:
+      - AUTOCONNECT=true
+      - VNC_SERVER=172.17.0.1:5900
